@@ -28,11 +28,12 @@ module.exports = {
       code,
     };
   },
-  fail(msg = "", code = CODE.BUSINESS_ERROR) {
+  fail(msg = "", code = CODE.BUSINESS_ERROR, data = "") {
     log4js.debug(msg);
     return {
       msg,
       code,
+      data,
     };
   },
 };
