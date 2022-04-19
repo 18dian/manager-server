@@ -7,6 +7,8 @@ const json = require("koa-json");
 const onerror = require("koa-onerror");
 // 前端请求的转换
 const bodyparser = require("koa-bodyparser");
+const jwt = require("jsonwebtoken");
+const koajwt = require("koa-jwt");
 // 日志
 // const logger = require('koa-logger')
 const log4js = require("./utils/log4js");
@@ -14,6 +16,7 @@ const log4js = require("./utils/log4js");
 // 路由
 const router = require("koa-router")();
 const users = require("./routes/users");
+const util = require("./utils/util");
 
 // error handler
 onerror(app);
@@ -41,13 +44,32 @@ app.use(async (ctx, next) => {
   // const start = new Date()
   log4js.info(`get params:${JSON.stringify(ctx.request.query)}`);
   log4js.info(`post params:${JSON.stringify(ctx.request.body)}`);
-  await next();
-  // const ms = new Date() - start
-  // console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
+  await next().catch((err) => {
+    if (err.status === "401") {
+      ctx.status = 200;
+      ctx.body = util.fail("Token认证失败", util.CODE.AUTH_ERROR);
+    } else {
+      throw err;
+    }
+  });
 });
+
+app.use(
+  koajwt({
+    secret: "my-token",
+  }).unless({
+    path: [/^\/api\/users\/login/],
+  })
+);
 
 router.prefix("/api");
 // routes, app.use的方式加载我们的routes
+
+router.get("/users/count", async (ctx) => {
+  const token = ctx.request.headers.authorization.split(" ")[1];
+  const payload = jwt.verify(token, "my-token");
+  ctx.body = payload;
+});
 router.use(users.routes(), users.allowedMethods());
 
 app.use(router.routes(), router.allowedMethods());
