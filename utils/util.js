@@ -15,8 +15,10 @@ module.exports = {
     pageSize *= 1;
     const skipIndex = (pageNum - 1) * pageSize;
     return {
-      pageNum,
-      pageSize,
+      page: {
+        pageNum,
+        pageSize,
+      },
       skipIndex,
     };
   },
