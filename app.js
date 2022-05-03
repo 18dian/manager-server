@@ -16,6 +16,7 @@ const log4js = require("./utils/log4js");
 // 路由
 const router = require("koa-router")();
 const users = require("./routes/users");
+const menus = require("./routes/menus");
 const util = require("./utils/util");
 
 // error handler
@@ -70,7 +71,9 @@ router.get("/users/count", async (ctx) => {
   const payload = jwt.verify(token, "my-token");
   ctx.body = payload;
 });
+
 router.use(users.routes(), users.allowedMethods());
+router.use(menus.routes(), menus.allowedMethods());
 
 app.use(router.routes(), router.allowedMethods());
 
